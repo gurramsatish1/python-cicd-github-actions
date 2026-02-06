@@ -30,10 +30,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6.0.2
 
-      - name: Log in to Docker Hub
-        run: echo "${{ secrets.SECRET }}" | docker login -u "${{ vars.MYDOCKER }}" --password-stdin
+      - name: Docker login (Azure)
+        uses: docker/login-action@v3
+        with:
+          registry: gaptraiing.azurecr.io
+          username: ${{ vars.AZURE_CLIENT_ID }}
+          password: ${{ secrets.AZURE_CLIENT_SECRET }} 
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t ${{ vars.MYDOCKER }}/python-cicd:${{ github.sha }} .
-          docker push ${{ vars.MYDOCKER }}/python-cicd:${{ github.sha }}
+          docker build -t ${{ vars.MYACR }}/python-cicd:${{ github.sha }} .
+          docker push ${{ vars.MYACR }}/python-cicd:${{ github.sha }}
