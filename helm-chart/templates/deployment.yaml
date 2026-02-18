@@ -14,8 +14,6 @@ spec:
       labels:
         {{- include "python-app.selectorLabels" . | nindent 8 }}
     spec:
-  template:
-    spec:
       imagePullSecrets:
         - name: acr-pull
       containers:
