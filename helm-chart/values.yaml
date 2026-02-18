@@ -1,0 +1,25 @@
+# Default values for python-app.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: gaptraiing.azurecr.io/python-app
+  tag: "692cd56b0b4f2f34478e08967a89afddab98bd6d"
+  pullPolicy: IfNotPresent
+
+# Optional image pull secrets for private registries like ACR
+imagePullSecrets: []
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

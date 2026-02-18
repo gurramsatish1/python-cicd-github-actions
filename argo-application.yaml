@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: python-app
+  namespace: argocd                 # where Argo CD itself is installed
+spec:
+  project: default
+  source:
+    repoURL: "https://github.com/amolxops/python-cicd-github-actions.git"  # change if you fork/host elsewhere
+    targetRevision: main
+    path: helm-chart
+    helm:
+      valueFiles:
+        - values.yaml
+      # you can also set image via parameters or override them in values.yaml
+      parameters:
+        - name: image.repository
+          value: <your-acr-name>.azurecr.io/python-app
+        - name: image.tag
+          value: "latest"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
