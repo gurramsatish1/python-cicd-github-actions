@@ -10,7 +10,8 @@ image:
   pullPolicy: IfNotPresent
 
 # Optional image pull secrets for private registries like ACR
-imagePullSecrets: []
+imagePullSecrets:
+  - name: acr-pull
 
 service:
   type: ClusterIP
