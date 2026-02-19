@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: satishgurram/python-cicd   # your public Docker Hub repo
-  tag: "latest"                           # or your commit sha tag
+  tag: "b6ac4b5d43dd0808043a101e1191a5ba53815475"                           # or your commit sha tag
   pullPolicy: IfNotPresent
 
 service:
