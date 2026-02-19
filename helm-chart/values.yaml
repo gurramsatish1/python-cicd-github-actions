@@ -1,4 +1,4 @@
-replicaCount: 1
+replicaCount: 3
 
 image:
   repository: satishgurram/python-cicd   # your public Docker Hub repo
