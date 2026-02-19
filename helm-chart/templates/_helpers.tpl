@@ -18,7 +18,7 @@ Common template helpers for python-app chart
 helm.sh/chart: {{ include "python-app.chart" . }}
 {{ include "python-app.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion }}
+app.kubernetes.io/version: "{{ .Chart.AppVersion }}"
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
