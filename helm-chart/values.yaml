@@ -1,26 +1,15 @@
-# Default values for python-app.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-replicaCount: 3
+replicaCount: 1
 
 image:
-  repository: satishgurram/python-cicd
-  tag: "3e7487f105d348aec78e5146d6274e3606bfb871"
+  repository: satishgurram/python-cicd   # your public Docker Hub repo
+  tag: "latest"                           # or your commit sha tag
   pullPolicy: IfNotPresent
-
-# Optional image pull secrets for private registries like ACR
-imagePullSecrets:
-  - name: acr-pull
 
 service:
   type: ClusterIP
   port: 80
 
 resources: {}
-
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
