@@ -32,7 +32,7 @@ jobs:
          args: >
           -Dsonar.projectKey=gurramsatish1_python-cicd-github-actions
           -Dsonar.organization=gurramsatish1
-          -Dsonar.sources=src
+          -Dsonar.sources=.
         env:
          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
          SONAR_HOST_URL: https://sonarcloud.io/
