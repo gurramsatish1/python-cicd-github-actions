@@ -14,10 +14,16 @@ spec:
       labels:
         {{- include "python-app.selectorLabels" . | nindent 8 }}
     spec:
+      {{- /* --- Image pull secrets for ACR (optional, from values.yaml) --- */ -}}
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+      {{- end }}
+
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
           ports:
             - containerPort: 80
           resources:
