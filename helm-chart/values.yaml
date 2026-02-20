@@ -1,8 +1,8 @@
 replicaCount: 3
 
 image:
-  repository: satishgurram/python-cicd
-  tag: "3e7487f105d348aec78e5146d6274e3606bfb871"
+  repository: gaptraiing.azurecr.io/python-cicd
+  tag: "bbb54bcbbb154d5ff407e051e4be7851a2eed602"
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
