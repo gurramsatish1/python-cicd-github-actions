@@ -11,17 +11,17 @@ spec:
       {{- include "python-app.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-             {{- include "python-app.selectorLabels" . | nindent 8 }}
+      labels:
+        {{- include "python-app.selectorLabels" . | nindent 8 }}
     spec:
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml .Values.imagePullSecrets | nindent 8 }}
       {{- end }}
-
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
           ports:
             - containerPort: 80
           resources:
