@@ -2,7 +2,7 @@ replicaCount: 3
 
 image:
   repository: gpatraining.azurecr.io/python-cicd
-  tag: "latest"
+  tag: "bbb54bcbbb154d5ff407e051e4be7851a2eed602"
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
