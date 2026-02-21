@@ -1,13 +1,10 @@
 replicaCount: 3
-
 image:
   repository: gaptraiing.azurecr.io/python-cicd
-  tag: "bbb54bcbbb154d5ff407e051e4be7851a2eed602"
+  tag: "b6e24d2e84a00bd0ba0620c12d5e2a5f597a9866"
   pullPolicy: IfNotPresent
-
 imagePullSecrets:
   - name: acr-secret
-
 service:
   type: ClusterIP
   port: 80
