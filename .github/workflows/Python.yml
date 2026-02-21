@@ -62,3 +62,49 @@ jobs:
         run: |
           docker build -t gaptraiing.azurecr.io/python-cicd:${{ github.sha }} .
           docker push gaptraiing.azurecr.io/python-cicd:${{ github.sha }}
+      - name: Update helm-chart/values.yaml with pushed image and tag
+        run: |
+          set -euo pipefail
+          
+          VALUES_FILE="helm-chart/values.yaml"
+          IMAGE_REPO="gaptraiing.azurecr.io/python-cicd"
+          IMAGE_TAG="${{ github.sha }}"
+
+          echo "Updating ${VALUES_FILE} with repo=${IMAGE_REPO} tag=${IMAGE_TAG}"
+
+          # Install yq (single static binary)
+          YQ_VERSION="v4.44.3"
+          BINARY="yq_linux_amd64"
+          curl -sL "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${BINARY}.tar.gz" \
+            | tar xz && sudo mv ${BINARY} /usr/local/bin/yq
+          yq --version
+
+          # Ensure .image exists, then set repository and tag
+          yq -i '
+            .image = (.image // {}) |
+            .image.repository = "'"${IMAGE_REPO}"'" |
+            .image.tag = "'"${IMAGE_TAG}"'"
+          ' "$VALUES_FILE"
+
+          echo "Updated $VALUES_FILE:"
+          cat "$VALUES_FILE"
+
+      - name: Commit and push values.yaml update
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # Configure git identity for the bot
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Commit only if there are actual changes
+          if git diff --quiet --exit-code; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git add helm-chart/values.yaml
+          git commit -m "chore: update Helm image to gaptraiing.azurecr.io/python-cicd:${GITHUB_SHA}"
+          git push
