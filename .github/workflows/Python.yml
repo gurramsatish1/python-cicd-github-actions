@@ -110,8 +110,14 @@ jobs:
           git add helm-chart/values.yaml
           git commit -m "chore: update Helm image to gaptraiing.azurecr.io/python-cicd:${GITHUB_SHA}"
           
-          git fetch origin
+          git fetch origin                                       
           git checkout main
           git rebase origin/main
           git push --force-with-lease origin main
+
+         # Your pipeline is auto‑committing image tags.
+          #These commits often run in parallel, causing:
+           #  non-fast-forward errors
+            # rejected pushes
+           #stalled GitOps syncs
 
