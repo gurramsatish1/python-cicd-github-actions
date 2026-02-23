@@ -62,7 +62,18 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           docker build -t gaptraiing.azurecr.io/python-cicd:${{ github.sha }} .
-          docker push gaptraiing.azurecr.io/python-cicd:${{ github.sha }}
+          
+      - name: Trivy Vulnerability Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: myimage:${{ github.sha }}
+          format: 'table'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+      - name: Build and Push Docker Image
+        run: |
+             docker push gaptraiing.azurecr.io/python-cicd:${{ github.sha }}
+             
       - name: Update helm-chart/values.yaml with pushed image and tag
         run: |
           set -euo pipefail
