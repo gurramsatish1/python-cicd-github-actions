@@ -1,7 +1,7 @@
 replicaCount: 3
 image:
   repository: gaptraiing.azurecr.io/python-cicd
-  tag: "6969b0ce76aed7b166eb39f0560a26ae8a023e84"
+  tag: "a5b35e4e45b4037542509ec91222962b4139b044"
   pullPolicy: IfNotPresent
 imagePullSecrets:
   - name: acr-secret
