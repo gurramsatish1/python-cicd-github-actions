@@ -109,4 +109,9 @@ jobs:
 
           git add helm-chart/values.yaml
           git commit -m "chore: update Helm image to gaptraiing.azurecr.io/python-cicd:${GITHUB_SHA}"
-          git push
+          
+          git fetch origin
+          git checkout main
+          git rebase origin/main
+          git push --force-with-lease origin main
+
