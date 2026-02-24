@@ -30,7 +30,9 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # --- TRIVY: Filesystem scan (dependencies & OS pkgs) ---
+      # ------------------------------------------------------
+      # TRIVY: Filesystem scan (dependencies, libraries, OS)
+      # ------------------------------------------------------
       - name: Trivy FS scan (repo)
         uses: aquasecurity/trivy-action@0.24.0
         with:
@@ -38,12 +40,19 @@ jobs:
           scan-ref: '.'
           format: 'sarif'
           output: 'trivy-fs.sarif'
-          # You can tighten or relax this threshold
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
-          vuln-type: 'os,library'  # scan both OS and app libraries
+          vuln-type: 'os,library'
 
-      # --- TRIVY: IaC config scan (K8s/Helm/Terraform misconfigs) ---
+      - name: Upload Trivy FS SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-fs.sarif
+          category: trivy-fs
+
+      # ------------------------------------------------------
+      # TRIVY: IaC (Helm / K8s / Terraform)
+      # ------------------------------------------------------
       - name: Trivy Config scan (IaC misconfigurations)
         uses: aquasecurity/trivy-action@0.24.0
         with:
@@ -52,19 +61,17 @@ jobs:
           format: 'sarif'
           output: 'trivy-config.sarif'
           severity: 'CRITICAL,HIGH,MEDIUM'
-          exit-code: '0'  # Do not fail build for misconfigs initially; tune later
+          exit-code: '0'
 
-      # Upload both SARIFs to GitHub Code Scanning (Security tab)
-      - name: Upload Trivy FS results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: trivy-fs.sarif
-
-      - name: Upload Trivy Config results to GitHub Security
+      - name: Upload Trivy Config SARIF
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-config.sarif
+          category: trivy-config
 
+      # ------------------------------------------------------
+      # SonarCloud
+      # ------------------------------------------------------
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v2
         with:
@@ -102,7 +109,9 @@ jobs:
         run: |
           docker build -t gaptraiing.azurecr.io/python-cicd:${{ github.sha }} .
 
-      # --- TRIVY: Image scan (fail on High/Critical) ---
+      # ------------------------------------------------------
+      # TRIVY: Docker Image Scan
+      # ------------------------------------------------------
       - name: Trivy Image scan (ACR image)
         uses: aquasecurity/trivy-action@0.24.0
         with:
@@ -112,20 +121,27 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
-          exit-code: '1'  # Fail the job if High/Critical found (tune as needed)
+          exit-code: '1'
 
-      - name: Upload Trivy Image results to GitHub Security
+      - name: Upload Trivy Image SARIF
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-image.sarif
+          category: trivy-image
 
+      # ------------------------------------------------------
+      # PUSH IMAGE TO ACR
+      # ------------------------------------------------------
       - name: Push Docker image (only if trivy passed)
         if: success()
         run: |
           docker push gaptraiing.azurecr.io/python-cicd:${{ github.sha }}
 
-      - name: Update helm-chart/values.yaml with pushed image and tag
+      # ------------------------------------------------------
+      # UPDATE HELM VALUES FILE
+      # ------------------------------------------------------
+      - name: Update helm-chart/values.yaml with new image tag
         if: success()
         run: |
           set -euo pipefail
@@ -133,22 +149,26 @@ jobs:
           VALUES_FILE="helm-chart/values.yaml"
           IMAGE_REPO="gaptraiing.azurecr.io/python-cicd"
           IMAGE_TAG="${{ github.sha }}"
-          echo "Updating ${VALUES_FILE} with repo=${IMAGE_REPO} tag=${IMAGE_TAG}"
-          # Install yq (single static binary)
+
+          echo "Updating ${VALUES_FILE} with ${IMAGE_REPO}:${IMAGE_TAG}"
+
           YQ_VERSION="v4.44.3"
           BINARY="yq_linux_amd64"
           curl -sL "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${BINARY}.tar.gz" \
             | tar xz && sudo mv ${BINARY} /usr/local/bin/yq
-          yq --version
-          # Ensure .image exists, then set repository and tag
+
           yq -i '
             .image = (.image // {}) |
             .image.repository = "'"${IMAGE_REPO}"'" |
             .image.tag = "'"${IMAGE_TAG}"'"
           ' "$VALUES_FILE"
+
           echo "Updated $VALUES_FILE:"
           cat "$VALUES_FILE"
 
+      # ------------------------------------------------------
+      # COMMIT & PUSH UPDATED VALUES FILE
+      # ------------------------------------------------------
       - name: Commit and push values.yaml update
         if: success()
         env:
@@ -157,13 +177,12 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
           if git diff --quiet --exit-code; then
             echo "No changes to commit."
             exit 0
           fi
+
           git add helm-chart/values.yaml
           git commit -m "chore: update Helm image to gaptraiing.azurecr.io/python-cicd:${GITHUB_SHA}"
-          git fetch origin
-          git checkout main
-          git rebase origin/main
-          git push --force-with-lease origin main
+          git push origin main
